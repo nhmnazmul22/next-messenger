@@ -25,7 +25,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
   const user = users[params.id] || { name: "Unknown User", status: "offline" };
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex flex-col">
+    <div className="flex flex-col min-h-screen">
       <header className="bg-indigo-600 text-white px-4 py-3 shadow-lg">
         <div className="max-w-2xl mx-auto flex items-center">
           <Link

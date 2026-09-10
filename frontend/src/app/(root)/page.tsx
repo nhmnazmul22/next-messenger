@@ -11,7 +11,7 @@ const users = [
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+    <>
       <header className="bg-indigo-600 text-white px-6 py-4 shadow-lg">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <h1 className="text-xl font-bold">Messenger</h1>
@@ -86,6 +86,6 @@ export default function Home() {
           ))}
         </div>
       </main>
-    </div>
+    </>
   );
 }
