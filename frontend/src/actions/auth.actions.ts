@@ -1,6 +1,7 @@
 "use server";
 import { registerUser } from "@/services/auth";
 import { RegisterUserType } from "@/types/auth";
+import { convertFileToBase64 } from "@/utils/file";
 import { formValidation } from "@/utils/validation";
 
 export type RegisterActionResult<T extends object> = {
@@ -10,15 +11,24 @@ export type RegisterActionResult<T extends object> = {
 };
 
 export const registerAction = async (
-  state: RegisterActionResult<RegisterUserType>,
+  state: RegisterActionResult<RegisterUserType> | null,
   formData: FormData,
-): Promise<RegisterActionResult<RegisterUserType>> => {
+): Promise<RegisterActionResult<RegisterUserType> | null> => {
+  const avatarFile = formData.get("avatar");
+  let avatar: string | undefined;
+
+  if (avatarFile && avatarFile instanceof File && avatarFile.size > 0) {
+    avatar = await convertFileToBase64(avatarFile);
+  }
+
   const data: RegisterUserType = {
     fullname: formData.get("fullname") as string,
     email: formData.get("email") as string,
     password: formData.get("password") as string,
-    avatar: formData.get("avatar") as string | undefined,
+    avatar,
   };
+
+  console.log("Form Data:", data);
 
   const validationResult = formValidation(data, [
     "fullname",
@@ -35,6 +45,7 @@ export const registerAction = async (
 
   try {
     const response = await registerUser(data);
+    console.log("Registration response:", response);
     return {
       success: true,
       message: "Registration successful",

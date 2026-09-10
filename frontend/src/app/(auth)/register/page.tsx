@@ -1,15 +1,20 @@
 "use client";
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { registerAction } from "@/actions/auth.actions";
+import Image from "next/image";
 import Link from "next/link";
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 
 export default function RegisterPage() {
-  const [state, formAction, isPending] = useActionState(registerAction, {
-    success: false,
-    message: "",
-  });
+  const [state, formAction, isPending] = useActionState(registerAction, null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+
+  const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const previewUrl = URL.createObjectURL(file);
+    setAvatarPreview(previewUrl);
+  };
 
   useEffect(() => {
     if (!state) return;
@@ -35,41 +40,54 @@ export default function RegisterPage() {
       <form action={formAction} className="space-y-5">
         <div className="flex justify-center">
           <label className="relative cursor-pointer group">
-            <div className="w-24 h-24 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden border-4 border-dashed border-gray-300 dark:border-gray-600 group-hover:border-indigo-500 transition-colors">
-              <svg
-                className="w-10 h-10 text-gray-400 group-hover:text-indigo-500 transition-colors"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
-            </div>
-            <div className="absolute bottom-0 right-0 w-7 h-7 bg-indigo-600 rounded-full flex items-center justify-center border-2 border-white dark:border-gray-800">
-              <svg
-                className="w-4 h-4 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
-            </div>
+            {avatarPreview ? (
+              <Image
+                src={avatarPreview}
+                alt="Avatar Preview"
+                width={600}
+                height={600}
+                className="w-24 h-24 rounded-full object-cover border-2 border-indigo-500"
+              />
+            ) : (
+              <>
+                <div className="w-24 h-24 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden border-4 border-dashed border-gray-300 dark:border-gray-600 group-hover:border-indigo-500 transition-colors">
+                  <svg
+                    className="w-10 h-10 text-gray-400 group-hover:text-indigo-500 transition-colors"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                </div>
+                <div className="absolute bottom-0 right-0 w-7 h-7 bg-indigo-600 rounded-full flex items-center justify-center border-2 border-white dark:border-gray-800">
+                  <svg
+                    className="w-4 h-4 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 4v16m8-8H4"
+                    />
+                  </svg>
+                </div>
+              </>
+            )}
             <input
               type="file"
               accept="image/*"
               name="avatar"
               className="hidden"
+              onChange={handleAvatarChange}
             />
           </label>
         </div>
