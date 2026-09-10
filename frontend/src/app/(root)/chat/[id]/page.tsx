@@ -25,8 +25,8 @@ export default function ChatPage({ params }: { params: { id: string } }) {
   const user = users[params.id] || { name: "Unknown User", status: "offline" };
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <header className="bg-indigo-600 text-white px-4 py-3 shadow-lg">
+    <div className="flex flex-col">
+      <div className="bg-indigo-600 text-white px-4 py-3">
         <div className="max-w-2xl mx-auto flex items-center">
           <Link
             href="/"
@@ -64,7 +64,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
             </svg>
           </button>
         </div>
-      </header>
+      </div>
 
       <main className="flex-1 max-w-2xl w-full mx-auto bg-white dark:bg-gray-800 flex flex-col shadow-xl">
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
