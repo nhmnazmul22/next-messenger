@@ -25,10 +25,8 @@ export const registerAction = async (
     fullname: formData.get("fullname") as string,
     email: formData.get("email") as string,
     password: formData.get("password") as string,
-    avatar,
+    avatarUrl: avatar,
   };
-
-  console.log("Form Data:", data);
 
   const validationResult = formValidation(data, [
     "fullname",
