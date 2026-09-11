@@ -2,12 +2,14 @@
 import { registerAction } from "@/actions/auth.actions";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 
 export default function RegisterPage() {
   const [state, formAction, isPending] = useActionState(registerAction, null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const router = useRouter();
 
   const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -21,10 +23,11 @@ export default function RegisterPage() {
 
     if (state.success) {
       toast.success(state.message);
+      router.push("/login");
     } else {
       toast.error(state.message);
     }
-  }, [state]);
+  }, [state, router]);
 
   return (
     <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8">

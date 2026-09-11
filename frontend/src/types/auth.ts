@@ -1,5 +1,5 @@
 export interface RegisterUserType {
-  fullname: string;
+  name: string;
   email: string;
   password: string;
   avatarUrl?: string;

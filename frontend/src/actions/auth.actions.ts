@@ -22,14 +22,14 @@ export const registerAction = async (
   }
 
   const data: RegisterUserType = {
-    fullname: formData.get("fullname") as string,
+    name: formData.get("fullname") as string,
     email: formData.get("email") as string,
     password: formData.get("password") as string,
     avatarUrl: avatar,
   };
 
   const validationResult = formValidation(data, [
-    "fullname",
+    "name",
     "email",
     "password",
   ]);
@@ -43,7 +43,6 @@ export const registerAction = async (
 
   try {
     const response = await registerUser(data);
-    console.log("Registration response:", response);
     return {
       success: true,
       message: "Registration successful",
