@@ -1,5 +1,5 @@
 import { ApiError } from "@/helpers/ErrorHelper";
-import { parseJson } from "@/utils/http";
+import { parseJson } from "@/helpers/http";
 
 const resolveUrl = (url: string) => {
   const baseUrl =

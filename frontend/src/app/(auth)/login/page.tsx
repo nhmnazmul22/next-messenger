@@ -3,13 +3,21 @@
 import { loginAction } from "@/actions/auth.actions";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useActionState, useEffect } from "react";
+import { startTransition, useActionState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import { processErrorMessage } from "@/utils/error";
+import { csrfToken } from "@/services/auth";
 
 export default function LoginPage() {
   const [state, formAction, isPending] = useActionState(loginAction, null);
   const router = useRouter();
+
+  const handleLoginAction = async (formData: FormData) => {
+    await csrfToken();
+    startTransition(() => {
+      formAction(formData);
+    });
+  };
 
   useEffect(() => {
     if (!state) return;
@@ -35,7 +43,7 @@ export default function LoginPage() {
         </p>
       </div>
 
-      <form action={formAction} className="space-y-5">
+      <form action={handleLoginAction} className="space-y-5">
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
             Email

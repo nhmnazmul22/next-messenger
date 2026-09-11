@@ -23,12 +23,6 @@ export const loginUser = async <T extends object>(
   data: LoginType,
 ): Promise<T> => {
   try {
-    // Call the csrf token endpoint to get the CSRF token
-    await apiClient("/sanctum/csrf-cookie", {
-      method: "GET",
-      credentials: "include",
-    });
-
     const response = await apiClient("/api/auth/login", {
       method: "POST",
       credentials: "include",
@@ -38,8 +32,19 @@ export const loginUser = async <T extends object>(
       body: JSON.stringify(data),
     });
 
-    console.log("response", response)
+    console.log("response", response);
     return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const csrfToken = async () => {
+  try {
+    await apiClient("/sanctum/csrf-cookie", {
+      method: "GET",
+      credentials: "include",
+    });
   } catch (error) {
     throw error;
   }
