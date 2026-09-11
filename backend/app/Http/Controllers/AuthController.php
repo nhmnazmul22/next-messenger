@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\RegisterRequest;
-use App\Services\AuthServices\AuthServices;
 use Illuminate\Http\Request;
+use App\Services\AuthServices;
 
 class AuthController extends Controller
 {
