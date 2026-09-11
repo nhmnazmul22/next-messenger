@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\RegisterRequest;
+use App\Support\ApiResponse;
 use Illuminate\Http\Request;
 use App\Services\AuthServices;
 
@@ -19,7 +20,13 @@ class AuthController extends Controller
     public function register(RegisterRequest $request)
     {
         $validatedData = $request->validated();
-        return $this->authServices->register($validatedData);
+        $user = $this->authServices->register($validatedData);
+
+        return ApiResponse::success(
+            $user,
+            'User registered successfully.',
+            201,
+        );
     }
 
     /**

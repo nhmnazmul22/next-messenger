@@ -13,6 +13,13 @@ it('registers a new user with valid data', function () {
     ]);
 
     $response->assertStatus(201);
+    $response->assertJson([
+        'success' => true,
+        'message' => 'User registered successfully.',
+    ]);
+    $response->assertJsonPath('data.name', 'John Doe');
+    $response->assertJsonPath('data.email', 'john@example.com');
+    $response->assertJsonMissingPath('data.password');
     $this->assertDatabaseHas('users', [
         'name' => 'John Doe',
         'email' => 'john@example.com',
@@ -28,6 +35,11 @@ it('registers a new user with avatar', function () {
     ]);
 
     $response->assertStatus(201);
+    $response->assertJson([
+        'success' => true,
+        'message' => 'User registered successfully.',
+    ]);
+    $response->assertJsonPath('data.avatarUrl', 'https://example.com/avatar.jpg');
     $this->assertDatabaseHas('users', [
         'name' => 'Jane Doe',
         'email' => 'jane@example.com',
@@ -42,7 +54,11 @@ it('fails to register without name', function () {
     ]);
 
     $response->assertStatus(422);
+    $response->assertJson([
+        'success' => false,
+    ]);
     $response->assertJsonValidationErrors(['name']);
+    $response->assertJsonMissing(['data' => '']);
 });
 
 it('fails to register without email', function () {
@@ -52,6 +68,7 @@ it('fails to register without email', function () {
     ]);
 
     $response->assertStatus(422);
+    $response->assertJson(['success' => false]);
     $response->assertJsonValidationErrors(['email']);
 });
 
@@ -62,6 +79,7 @@ it('fails to register without password', function () {
     ]);
 
     $response->assertStatus(422);
+    $response->assertJson(['success' => false]);
     $response->assertJsonValidationErrors(['password']);
 });
 
@@ -73,6 +91,7 @@ it('fails to register with invalid email', function () {
     ]);
 
     $response->assertStatus(422);
+    $response->assertJson(['success' => false]);
     $response->assertJsonValidationErrors(['email']);
 });
 
@@ -84,6 +103,7 @@ it('fails to register with short password', function () {
     ]);
 
     $response->assertStatus(422);
+    $response->assertJson(['success' => false]);
     $response->assertJsonValidationErrors(['password']);
 });
 
@@ -99,5 +119,26 @@ it('fails to register with duplicate email', function () {
     ]);
 
     $response->assertStatus(422);
+    $response->assertJson(['success' => false]);
     $response->assertJsonValidationErrors(['email']);
+});
+
+it('returns validation errors in the standard format', function () {
+    $response = $this->postJson(route('auth.register'), [
+        'name' => '',
+        'email' => 'not-an-email',
+        'password' => '123',
+    ]);
+
+    $response->assertStatus(422);
+    $response->assertJsonStructure([
+        'success',
+        'message',
+        'errors' => [
+            'name',
+            'email',
+            'password',
+        ],
+    ]);
+    $response->assertJsonPath('success', false);
 });
