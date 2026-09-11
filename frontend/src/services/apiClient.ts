@@ -17,20 +17,31 @@ const resolveUrl = (url: string) => {
   return `${baseUrl}${url}`;
 };
 
+const getCookie = (name: string): string | null => {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : null;
+};
+
 export const apiClient = async <T extends object>(
   url: string,
   options: RequestInit = {},
 ): Promise<ApiResponseType<T>> => {
-  const initialOptions: RequestInit = {
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  };
+  const headers = new Headers(options.headers);
+  headers.set("Content-Type", "application/json");
+  headers.set("Accept", "application/json");
+
+  if ((options.method ?? "GET") !== "GET") {
+    const xsrfToken = getCookie("XSRF-TOKEN");
+    if (xsrfToken) {
+      headers.set("X-XSRF-TOKEN", xsrfToken);
+    }
+  }
 
   const response = await fetch(resolveUrl(url), {
-    ...initialOptions,
     ...options,
+    credentials: "include",
+    headers,
   });
 
   if (!response.ok) {

@@ -1,36 +1,49 @@
 "use client";
 
-import { loginAction } from "@/actions/auth.actions";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { startTransition, useActionState, useEffect } from "react";
+import { useState } from "react";
 import { toast } from "react-hot-toast";
-import { processErrorMessage } from "@/utils/error";
-import { csrfToken } from "@/services/auth";
+import { handleError, processErrorMessage } from "@/utils/error";
+import { csrfToken, loginUser } from "@/services/auth";
+import { LoginType } from "@/types/auth";
+import { formValidation } from "@/utils/validation";
 
 export default function LoginPage() {
-  const [state, formAction, isPending] = useActionState(loginAction, null);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const handleLoginAction = async (formData: FormData) => {
-    await csrfToken();
-    startTransition(() => {
-      formAction(formData);
-    });
-  };
+    setIsLoading(true);
+    const data: LoginType = {
+      email: formData.get("email") as string,
+      password: formData.get("password") as string,
+    };
 
-  useEffect(() => {
-    if (!state) return;
+    const validationResult = formValidation(data, ["email", "password"]);
 
-    if (state.success) {
-      toast.success(state.message);
-      router.push("/");
-    } else {
-      toast.error(
-        processErrorMessage(state.errors ? state.errors : state.message),
-      );
+    if (!validationResult.success) {
+      throw new Error(validationResult.message ?? "Validation failed");
     }
-  }, [state, router]);
+
+    try {
+      await csrfToken();
+
+      const response = await loginUser<LoginType>(data);
+      toast.success(response.message ?? "Login successful");
+      router.replace("/");
+    } catch (error) {
+      console.error("error", error);
+      const errorState = handleError(error);
+      toast.error(
+        processErrorMessage(
+          errorState.errors ? errorState.errors : errorState.message,
+        ),
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8">
@@ -70,11 +83,11 @@ export default function LoginPage() {
 
         <button
           type="submit"
-          disabled={isPending}
+          disabled={isLoading}
           className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold
           rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isPending ? "Logging in..." : "Login"}
+          {isLoading ? "Logging in..." : "Login"}
         </button>
       </form>
 

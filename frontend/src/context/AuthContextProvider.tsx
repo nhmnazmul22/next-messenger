@@ -11,7 +11,6 @@ import {
   useEffect,
   useState,
 } from "react";
-import toast from "react-hot-toast";
 
 type AuthContextType = {
   userInfo: User | null;
@@ -34,6 +33,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
         throw new Error(response.message ?? "User not found");
       }
 
+      console.log("response", response)
       setUserInfo(response.data);
     } catch (error) {
       handleError(error);

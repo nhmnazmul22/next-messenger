@@ -42,6 +42,18 @@ export const csrfToken = async () => {
   }
 };
 
+export const logoutUser = async (): Promise<ApiResponseType<object>> => {
+  try {
+    const response = await apiClient("/api/auth/logout", {
+      method: "POST",
+    });
+
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getProfile = async (): Promise<ApiResponseType<User>> => {
   try {
     const response = await apiClient<User>("/api/auth/me", {
