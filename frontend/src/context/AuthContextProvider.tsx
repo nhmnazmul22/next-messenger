@@ -3,6 +3,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { getProfile } from "@/services/auth";
 import { User } from "@/types/user";
+import { handleError } from "@/utils/error";
 import {
   createContext,
   ReactNode,
@@ -15,22 +16,30 @@ import toast from "react-hot-toast";
 type AuthContextType = {
   userInfo: User | null;
   isAuthenticated: boolean;
+  isAuthLoading: boolean;
 };
 
 export const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
   const [userInfo, setUserInfo] = useState<User | null>(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(false);
 
   const fetchUserInfo = async () => {
-    const response = await getProfile();
+    setIsAuthLoading(true);
+    try {
+      const response = await getProfile();
 
-    if (!response.success || !response.data) {
-      toast.error(response.message ?? "User not found");
-      return;
+      if (!response.success || !response.data) {
+        throw new Error(response.message ?? "User not found");
+      }
+
+      setUserInfo(response.data);
+    } catch (error) {
+      handleError(error);
+    } finally {
+      setIsAuthLoading(false);
     }
-
-    setUserInfo(response.data);
   };
 
   useEffect(() => {
@@ -40,7 +49,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
   const isAuthenticated = Boolean(userInfo?.email && userInfo.id);
 
   return (
-    <AuthContext.Provider value={{ userInfo, isAuthenticated }}>
+    <AuthContext.Provider value={{ userInfo, isAuthenticated, isAuthLoading }}>
       {children}
     </AuthContext.Provider>
   );
