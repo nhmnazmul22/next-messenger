@@ -10,4 +10,5 @@ Route::prefix('auth')->as('auth.')->group(function () {
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::get('/auth/me', [AuthController::class, 'me'])->name('me');
 });
