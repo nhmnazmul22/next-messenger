@@ -33,6 +33,7 @@ export const loginUser = async <T extends object>(
 };
 
 export const csrfToken = async () => {
+  console.log("I am calling");
   try {
     await apiClient("/sanctum/csrf-cookie", {
       method: "GET",
@@ -56,11 +57,14 @@ export const logoutUser = async (): Promise<ApiResponseType<object>> => {
 
 export const getProfile = async (): Promise<ApiResponseType<User>> => {
   try {
-    const response = await apiClient<User>("/api/auth/me", {
-      method: "GET",
-    });
+    // const response = await apiClient<User>("/api/auth/me", {
+    //   method: "GET",
+    // });
 
-    return response;
+    return {
+      success: true,
+      message: "",
+    } satisfies ApiResponseType<User>;
   } catch (error) {
     throw error;
   }

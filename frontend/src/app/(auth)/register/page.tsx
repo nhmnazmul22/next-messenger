@@ -1,36 +1,55 @@
 "use client";
-import { registerAction } from "@/actions/auth.actions";
-import { processErrorMessage } from "@/utils/error";
-import Image from "next/image";
+import { csrfToken, registerUser } from "@/services/auth";
+import { RegisterType } from "@/types/auth";
+import { handleError, processErrorMessage } from "@/utils/error";
+import { formValidation } from "@/utils/validation";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useActionState, useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "react-hot-toast";
 
 export default function RegisterPage() {
-  const [state, formAction, isPending] = useActionState(registerAction, null);
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    const previewUrl = URL.createObjectURL(file);
-    setAvatarPreview(previewUrl);
-  };
+  const handleRegister = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setIsLoading(true);
+    const formData = new FormData(event.currentTarget);
+    const data: RegisterType = {
+      name: formData.get("fullname") as string,
+      email: formData.get("email") as string,
+      password: formData.get("password") as string,
+    };
 
-  useEffect(() => {
-    if (!state) return;
+    const validationResult = formValidation(data, [
+      "name",
+      "email",
+      "password",
+    ]);
 
-    if (state.success) {
-      toast.success(state.message);
-      router.push("/login");
-    } else {
-      toast.error(
-        processErrorMessage(state.errors ? state.errors : state.message),
-      );
+    if (!validationResult.success) {
+      throw new Error(validationResult.message ?? "Validation failed");
     }
-  }, [state, router]);
+
+    try {
+      await csrfToken();
+
+      const response = await registerUser<RegisterType>(data);
+      toast.success(response.message ?? "Login successful");
+      router.push("/login");
+    } catch (error) {
+      console.error("error", error);
+      const errorState = handleError(error);
+      toast.error(
+        processErrorMessage(
+          errorState.errors ? errorState.errors : errorState.message,
+        ),
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8">
@@ -43,64 +62,7 @@ export default function RegisterPage() {
         </p>
       </div>
 
-      <form action={formAction} className="space-y-5">
-        <div className="flex justify-center">
-          <label className="relative cursor-pointer group">
-            {avatarPreview ? (
-              <Image
-                src={avatarPreview}
-                alt="Avatar Preview"
-                width={600}
-                height={600}
-                className="w-24 h-24 rounded-full object-cover border-2 border-indigo-500"
-              />
-            ) : (
-              <>
-                <div className="w-24 h-24 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden border-4 border-dashed border-gray-300 dark:border-gray-600 group-hover:border-indigo-500 transition-colors">
-                  <svg
-                    className="w-10 h-10 text-gray-400 group-hover:text-indigo-500 transition-colors"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    />
-                  </svg>
-                </div>
-                <div className="absolute bottom-0 right-0 w-7 h-7 bg-indigo-600 rounded-full flex items-center justify-center border-2 border-white dark:border-gray-800">
-                  <svg
-                    className="w-4 h-4 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 4v16m8-8H4"
-                    />
-                  </svg>
-                </div>
-              </>
-            )}
-            <input
-              type="file"
-              accept="image/*"
-              name="avatar"
-              className="hidden"
-              onChange={handleAvatarChange}
-            />
-          </label>
-        </div>
-        <p className="text-center text-xs text-gray-500 dark:text-gray-400 -mt-2">
-          Click to upload avatar
-        </p>
-
+      <form onSubmit={handleRegister} className="space-y-5">
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
             Full Name
@@ -139,11 +101,11 @@ export default function RegisterPage() {
 
         <button
           type="submit"
-          disabled={isPending}
+          disabled={isLoading}
           className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg
           transition-colors  disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isPending ? "Registering..." : "Register"}
+          {isLoading ? "Registering..." : "Register"}
         </button>
       </form>
 

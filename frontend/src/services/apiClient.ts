@@ -17,13 +17,30 @@ const resolveUrl = (url: string) => {
   return `${baseUrl}${url}`;
 };
 
+const getCookie = (name: string) => {
+  const cookies = document.cookie.split("; ");
+
+  const cookie = cookies.find((row) => row.startsWith(`${name}=`));
+
+  return cookie ? decodeURIComponent(cookie.split("=")[1]) : null;
+};
+
 export const apiClient = async <T extends object>(
   url: string,
   options: RequestInit = {},
 ): Promise<ApiResponseType<T>> => {
-  const response = await fetch(resolveUrl(url), {
-    ...options,
+  const initialOptions: RequestInit = {
     credentials: "include",
+    headers: {
+      Accept: "application/json",
+      "Content-type": "application/json",
+      "X-XSRF-TOKEN": getCookie("XSRF-TOKEN") ?? "",
+    },
+  };
+
+  const response = await fetch(resolveUrl(url), {
+    ...initialOptions,
+    ...options,
   });
 
   if (!response.ok) {
