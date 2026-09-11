@@ -13,8 +13,10 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const handleLoginAction = async (formData: FormData) => {
+  const handleLoginAction = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     setIsLoading(true);
+    const formData = new FormData(event.currentTarget);
     const data: LoginType = {
       email: formData.get("email") as string,
       password: formData.get("password") as string,
@@ -56,7 +58,7 @@ export default function LoginPage() {
         </p>
       </div>
 
-      <form action={handleLoginAction} className="space-y-5">
+      <form onSubmit={handleLoginAction} className="space-y-5">
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
             Email
