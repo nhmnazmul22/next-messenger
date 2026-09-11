@@ -2,6 +2,7 @@
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Symfony\Component\HttpFoundation\Response;
 
 uses(RefreshDatabase::class);
 
@@ -154,14 +155,12 @@ it('logs in a user with valid credentials', function () {
         'password' => 'password123',
     ]);
 
-    $response->assertStatus(200);
+    $response->assertStatus(Response::HTTP_OK);
     $response->assertJson([
         'success' => true,
         'message' => 'User logged in successfully.',
     ]);
-    $response->assertJsonPath('data.user.email', 'john@example.com');
-    $response->assertJsonPath('data.token', fn (mixed $token) => is_string($token) && strlen($token) > 0);
-    $this->assertDatabaseCount('personal_access_tokens', 1);
+    $response->assertJsonPath('data.email', 'john@example.com');
 });
 
 it('fails to login with wrong password', function () {

@@ -8,6 +8,7 @@ use App\Services\AuthServices;
 use App\Support\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\Response;
 
 class AuthController extends Controller
 {
@@ -26,7 +27,7 @@ class AuthController extends Controller
         return ApiResponse::success(
             $user,
             'User registered successfully.',
-            201,
+            Response::HTTP_CREATED,
         );
     }
 
@@ -41,17 +42,18 @@ class AuthController extends Controller
             return ApiResponse::error(
                 'Invalid credentials provided.',
                 [],
-                401,
+                Response::HTTP_UNAUTHORIZED,
             );
         }
 
-        $user = Auth::user();
-        $token = $user->createToken('auth_token')->plainTextToken;
+        if ($request->hasSession()) {
+            $request->session()->regenerate();
+        }
 
-        return ApiResponse::success([
-            'user' => $user,
-            'token' => $token,
-        ], 'User logged in successfully.');
+        return ApiResponse::success(
+            Auth::user(),
+            'User logged in successfully.',
+        );
     }
 
     /**
