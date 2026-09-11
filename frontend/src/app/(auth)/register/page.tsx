@@ -1,5 +1,6 @@
 "use client";
 import { registerAction } from "@/actions/auth.actions";
+import { processErrorMessage } from "@/utils/error";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -25,7 +26,9 @@ export default function RegisterPage() {
       toast.success(state.message);
       router.push("/login");
     } else {
-      toast.error(state.message);
+      toast.error(
+        processErrorMessage(state.errors ? state.errors : state.message),
+      );
     }
   }, [state, router]);
 

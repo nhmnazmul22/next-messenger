@@ -1,12 +1,15 @@
 "use server";
+import { ApiError } from "@/helpers/ErrorHelper";
 import { registerUser } from "@/services/auth";
 import { RegisterUserType } from "@/types/auth";
+import { handleError } from "@/utils/error";
 import { convertFileToBase64 } from "@/utils/file";
 import { formValidation } from "@/utils/validation";
 
 export type RegisterActionResult<T extends object> = {
   success: boolean;
   message: string;
+  errors?: Record<string, string[]>;
   data?: T;
 };
 
@@ -28,11 +31,7 @@ export const registerAction = async (
     avatarUrl: avatar,
   };
 
-  const validationResult = formValidation(data, [
-    "name",
-    "email",
-    "password",
-  ]);
+  const validationResult = formValidation(data, ["name", "email", "password"]);
 
   if (!validationResult.success) {
     return {
@@ -49,10 +48,7 @@ export const registerAction = async (
       data: response as RegisterUserType,
     };
   } catch (error) {
-    return {
-      success: false,
-      message:
-        error instanceof Error ? error.message : "An unexpected error occurred",
-    };
+    console.log("errors", error);
+    return handleError(error);
   }
 };
