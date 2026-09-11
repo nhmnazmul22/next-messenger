@@ -11,7 +11,7 @@ export const apiClient = async (url: string, options: RequestInit = {}) => {
   const response = await fetch(resolveUrl(url), options);
   if (!response.ok) {
     console.log("Response not ok:", response);
-    throw new Error(`HTTP error! status: ${response.status}`);
+    throw new Error(`${response.statusText}`);
   }
   return response.json();
 };
