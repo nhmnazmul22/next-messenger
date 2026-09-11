@@ -1,15 +1,13 @@
 import { LoginType, RegisterType } from "@/types/auth";
-import { apiClient } from "./apiClient";
+import { apiClient, ApiResponseType } from "./apiClient";
+import { User } from "@/types/user";
 
 export const registerUser = async <T extends object>(
   data: RegisterType,
-): Promise<T> => {
+): Promise<ApiResponseType<T>> => {
   try {
-    const response = await apiClient("/api/auth/register", {
+    const response = await apiClient<T>("/api/auth/register", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
       body: JSON.stringify(data),
     });
 
@@ -21,18 +19,13 @@ export const registerUser = async <T extends object>(
 
 export const loginUser = async <T extends object>(
   data: LoginType,
-): Promise<T> => {
+): Promise<ApiResponseType<T>> => {
   try {
-    const response = await apiClient("/api/auth/login", {
+    const response = await apiClient<T>("/api/auth/login", {
       method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
       body: JSON.stringify(data),
     });
 
-    console.log("response", response);
     return response;
   } catch (error) {
     throw error;
@@ -43,8 +36,19 @@ export const csrfToken = async () => {
   try {
     await apiClient("/sanctum/csrf-cookie", {
       method: "GET",
-      credentials: "include",
     });
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getProfile = async (): Promise<ApiResponseType<User>> => {
+  try {
+    const response = await apiClient<User>("/api/auth/me", {
+      method: "GET",
+    });
+
+    return response;
   } catch (error) {
     throw error;
   }

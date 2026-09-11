@@ -1,21 +1,15 @@
 "use server";
+import { ApiResponseType } from "@/services/apiClient";
 import { loginUser, registerUser } from "@/services/auth";
 import { LoginType, RegisterType } from "@/types/auth";
 import { handleError } from "@/utils/error";
 import { convertFileToBase64 } from "@/utils/file";
 import { formValidation } from "@/utils/validation";
 
-export type ActionResult<T extends object> = {
-  success: boolean;
-  message: string;
-  errors?: Record<string, string[]>;
-  data?: T;
-};
-
 export const registerAction = async (
-  state: ActionResult<RegisterType> | null,
+  state: ApiResponseType<RegisterType> | null,
   formData: FormData,
-): Promise<ActionResult<RegisterType> | null> => {
+): Promise<ApiResponseType<RegisterType> | null> => {
   const avatarFile = formData.get("avatar");
   let avatar: string | undefined;
 
@@ -40,11 +34,11 @@ export const registerAction = async (
   }
 
   try {
-    const response = await registerUser(data);
+    const response = await registerUser<RegisterType>(data);
     return {
-      success: true,
-      message: "Registration successful",
-      data: response as RegisterType,
+      success: response.success ?? true,
+      message: response.message ?? "Registration successful",
+      data: response.data,
     };
   } catch (error) {
     console.error("error", error);
@@ -53,9 +47,9 @@ export const registerAction = async (
 };
 
 export const loginAction = async (
-  state: ActionResult<LoginType> | null,
+  state: ApiResponseType<LoginType> | null,
   formData: FormData,
-): Promise<ActionResult<LoginType> | null> => {
+): Promise<ApiResponseType<LoginType> | null> => {
   const data: LoginType = {
     email: formData.get("email") as string,
     password: formData.get("password") as string,
@@ -71,11 +65,11 @@ export const loginAction = async (
   }
 
   try {
-    const response = await loginUser(data);
+    const response = await loginUser<LoginType>(data);
     return {
-      success: true,
-      message: "Login successful",
-      data: response as LoginType,
+      success: response.success ?? true,
+      message: response?.message ?? "Login successful",
+      data: response.data,
     };
   } catch (error) {
     console.error("error", error);
