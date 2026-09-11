@@ -57,14 +57,11 @@ export const logoutUser = async (): Promise<ApiResponseType<object>> => {
 
 export const getProfile = async (): Promise<ApiResponseType<User>> => {
   try {
-    // const response = await apiClient<User>("/api/auth/me", {
-    //   method: "GET",
-    // });
+    const response = await apiClient<User>("/api/auth/me", {
+      method: "GET",
+    });
 
-    return {
-      success: true,
-      message: "",
-    } satisfies ApiResponseType<User>;
+    return response;
   } catch (error) {
     throw error;
   }
