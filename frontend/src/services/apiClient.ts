@@ -1,4 +1,5 @@
 import { ApiError } from "@/helpers/ErrorHelper";
+import { parseJson } from "@/utils/http";
 
 const resolveUrl = (url: string) => {
   const baseUrl =
@@ -13,19 +14,13 @@ export const apiClient = async (url: string, options: RequestInit = {}) => {
   const response = await fetch(resolveUrl(url), options);
 
   if (!response.ok) {
-    let message = "Something went wrong.";
-    let errors: Record<string, string[]> | undefined;
-
-    try {
-      const body = await response.json();
-      message = body.message || message;
-      errors = body.errors;
-    } catch {
-      // response body is not JSON
-    }
-
-    throw new ApiError(message, response.status, errors);
+    const body = await parseJson(response);
+    throw new ApiError(
+      body?.message || "An error occurred",
+      response.status,
+      body?.errors || null,
+    );
   }
 
-  return response.json();
+  return parseJson(response);
 };

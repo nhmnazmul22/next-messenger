@@ -26,16 +26,19 @@ export const loginUser = async <T extends object>(
     // Call the csrf token endpoint to get the CSRF token
     await apiClient("/sanctum/csrf-cookie", {
       method: "GET",
+      credentials: "include",
     });
 
     const response = await apiClient("/api/auth/login", {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
     });
 
+    console.log("response", response)
     return response;
   } catch (error) {
     throw error;
