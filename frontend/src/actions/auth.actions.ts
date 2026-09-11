@@ -1,12 +1,11 @@
 "use server";
-import { ApiError } from "@/helpers/ErrorHelper";
-import { registerUser } from "@/services/auth";
-import { RegisterUserType } from "@/types/auth";
+import { loginUser, registerUser } from "@/services/auth";
+import { LoginType, RegisterType } from "@/types/auth";
 import { handleError } from "@/utils/error";
 import { convertFileToBase64 } from "@/utils/file";
 import { formValidation } from "@/utils/validation";
 
-export type RegisterActionResult<T extends object> = {
+export type ActionResult<T extends object> = {
   success: boolean;
   message: string;
   errors?: Record<string, string[]>;
@@ -14,9 +13,9 @@ export type RegisterActionResult<T extends object> = {
 };
 
 export const registerAction = async (
-  state: RegisterActionResult<RegisterUserType> | null,
+  state: ActionResult<RegisterType> | null,
   formData: FormData,
-): Promise<RegisterActionResult<RegisterUserType> | null> => {
+): Promise<ActionResult<RegisterType> | null> => {
   const avatarFile = formData.get("avatar");
   let avatar: string | undefined;
 
@@ -24,7 +23,7 @@ export const registerAction = async (
     avatar = await convertFileToBase64(avatarFile);
   }
 
-  const data: RegisterUserType = {
+  const data: RegisterType = {
     name: formData.get("fullname") as string,
     email: formData.get("email") as string,
     password: formData.get("password") as string,
@@ -45,10 +44,41 @@ export const registerAction = async (
     return {
       success: true,
       message: "Registration successful",
-      data: response as RegisterUserType,
+      data: response as RegisterType,
     };
   } catch (error) {
-    console.log("errors", error);
+    console.error("error", error);
+    return handleError(error);
+  }
+};
+
+export const loginAction = async (
+  state: ActionResult<LoginType> | null,
+  formData: FormData,
+): Promise<ActionResult<LoginType> | null> => {
+  const data: LoginType = {
+    email: formData.get("email") as string,
+    password: formData.get("password") as string,
+  };
+
+  const validationResult = formValidation(data, ["email", "password"]);
+
+  if (!validationResult.success) {
+    return {
+      success: false,
+      message: validationResult.message ?? "Validation failed",
+    };
+  }
+
+  try {
+    const response = await loginUser(data);
+    return {
+      success: true,
+      message: "Login successful",
+      data: response as LoginType,
+    };
+  } catch (error) {
+    console.error("error", error);
     return handleError(error);
   }
 };

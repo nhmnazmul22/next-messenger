@@ -2,7 +2,7 @@ import { ApiError } from "@/helpers/ErrorHelper";
 
 const resolveUrl = (url: string) => {
   const baseUrl =
-    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000/api";
+    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
   if (url.startsWith("http://") || url.startsWith("https://")) {
     return url;
   }

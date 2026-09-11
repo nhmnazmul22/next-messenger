@@ -140,7 +140,8 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={isPending}
-          className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors"
+          className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg
+          transition-colors  disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isPending ? "Registering..." : "Register"}
         </button>
