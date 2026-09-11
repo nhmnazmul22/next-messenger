@@ -142,3 +142,95 @@ it('returns validation errors in the standard format', function () {
     ]);
     $response->assertJsonPath('success', false);
 });
+
+it('logs in a user with valid credentials', function () {
+    User::factory()->create([
+        'email' => 'john@example.com',
+        'password' => 'password123',
+    ]);
+
+    $response = $this->postJson(route('auth.login'), [
+        'email' => 'john@example.com',
+        'password' => 'password123',
+    ]);
+
+    $response->assertStatus(200);
+    $response->assertJson([
+        'success' => true,
+        'message' => 'User logged in successfully.',
+    ]);
+    $response->assertJsonPath('data.user.email', 'john@example.com');
+    $response->assertJsonPath('data.token', fn (mixed $token) => is_string($token) && strlen($token) > 0);
+    $this->assertDatabaseCount('personal_access_tokens', 1);
+});
+
+it('fails to login with wrong password', function () {
+    User::factory()->create([
+        'email' => 'john@example.com',
+        'password' => 'password123',
+    ]);
+
+    $response = $this->postJson(route('auth.login'), [
+        'email' => 'john@example.com',
+        'password' => 'wrong-password',
+    ]);
+
+    $response->assertStatus(401);
+    $response->assertJson([
+        'success' => false,
+        'message' => 'Invalid credentials provided.',
+    ]);
+});
+
+it('fails to login with unregistered email', function () {
+    $response = $this->postJson(route('auth.login'), [
+        'email' => 'notfound@example.com',
+        'password' => 'password123',
+    ]);
+
+    $response->assertStatus(422);
+    $response->assertJson(['success' => false]);
+    $response->assertJsonValidationErrors(['email']);
+});
+
+it('fails to login without email', function () {
+    $response = $this->postJson(route('auth.login'), [
+        'password' => 'password123',
+    ]);
+
+    $response->assertStatus(422);
+    $response->assertJson(['success' => false]);
+    $response->assertJsonValidationErrors(['email']);
+});
+
+it('fails to login without password', function () {
+    $response = $this->postJson(route('auth.login'), [
+        'email' => 'john@example.com',
+    ]);
+
+    $response->assertStatus(422);
+    $response->assertJson(['success' => false]);
+    $response->assertJsonValidationErrors(['password']);
+});
+
+it('fails to login with invalid email', function () {
+    $response = $this->postJson(route('auth.login'), [
+        'email' => 'not-an-email',
+        'password' => 'password123',
+    ]);
+
+    $response->assertStatus(422);
+    $response->assertJson(['success' => false]);
+    $response->assertJsonValidationErrors(['email']);
+});
+
+it('fails to login with short password', function () {
+    $response = $this->postJson(route('auth.login'), [
+        'email' => 'john@example.com',
+        'password' => '1234567',
+    ]);
+
+    $response->assertStatus(422);
+    $response->assertJson(['success' => false]);
+    $response->assertJsonValidationErrors(['password']);
+});

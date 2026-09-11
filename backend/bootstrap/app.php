@@ -15,7 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->statefulApi();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
@@ -24,11 +24,11 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $exceptions->render(function (ValidationException $e, Request $request) {
             if ($request->is('api/*') || $request->expectsJson()) {
-return ApiResponse::error(
-                $e->getMessage(),
-                $e->errors(),
-                $e->getResponse()?->getStatusCode() ?? 422,
-            );
+                return ApiResponse::error(
+                    $e->getMessage(),
+                    $e->errors(),
+                    $e->getResponse()?->getStatusCode() ?? 422,
+                );
             }
 
             return null;

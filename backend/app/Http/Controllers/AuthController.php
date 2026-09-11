@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
+use App\Services\AuthServices;
 use App\Support\ApiResponse;
 use Illuminate\Http\Request;
-use App\Services\AuthServices;
+use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
-
     public function __construct(
         private readonly AuthServices $authServices
     ) {}
@@ -32,9 +33,25 @@ class AuthController extends Controller
     /**
      * Login a user
      */
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
-        //
+        $credentials = $request->validated();
+
+        if (! Auth::attempt($credentials)) {
+            return ApiResponse::error(
+                'Invalid credentials provided.',
+                [],
+                401,
+            );
+        }
+
+        $user = Auth::user();
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return ApiResponse::success([
+            'user' => $user,
+            'token' => $token,
+        ], 'User logged in successfully.');
     }
 
     /**
