@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 class UserRepository
 {
@@ -12,7 +13,9 @@ class UserRepository
 
     public function findAllUsers()
     {
-        return $this->user->all();
+        return $this->user
+            ->where('id', '!=', Auth::id())
+            ->get();
     }
 
     public function createUser(array $data)
