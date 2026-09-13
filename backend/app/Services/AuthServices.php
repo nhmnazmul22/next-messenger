@@ -16,9 +16,4 @@ class AuthServices
     {
         return $this->userRepository->createUser($attributes);
     }
-
-    public function logout()
-    {
-        // Implement logout logic here
-    }
 }
