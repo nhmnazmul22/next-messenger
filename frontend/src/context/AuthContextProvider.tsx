@@ -4,7 +4,6 @@
 import { getProfile } from "@/services/auth";
 import { User } from "@/types/user";
 import { handleError } from "@/utils/error";
-import { usePathname, useRouter } from "next/navigation";
 import {
   createContext,
   ReactNode,
@@ -20,17 +19,10 @@ type AuthContextType = {
   logout: () => void;
 };
 
-const isProtectedRoute = (pathname: string) =>
-  pathname === "/" || pathname.startsWith("/chat");
-
-const isGuestRoute = (pathname: string) =>
-  pathname === "/login" || pathname === "/register";
 
 export const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
-  const pathname = usePathname();
-  const router = useRouter();
   const [userInfo, setUserInfo] = useState<User | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
 
@@ -60,16 +52,6 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const isAuthenticated = Boolean(userInfo?.email && userInfo.id);
-
-  useEffect(() => {
-    if (isAuthLoading || !pathname) return;
-
-    if (isProtectedRoute(pathname) && !isAuthenticated) {
-      router.replace("/login");
-    } else if (isGuestRoute(pathname) && isAuthenticated) {
-      router.replace("/");
-    }
-  }, [isAuthLoading, isAuthenticated, pathname, router]);
 
   return (
     <AuthContext.Provider
