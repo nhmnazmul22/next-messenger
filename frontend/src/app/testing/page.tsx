@@ -11,14 +11,21 @@ export default function TestingPage() {
       return;
     }
 
-    echo.channel("message-send").listen("SendMessage", (event: unknown) => {
-      console.log("🔥 Received:", event);
-    });
+    const pusher = echo.connector.pusher;
+
+    pusher.send_event(
+      "message.send",
+      JSON.stringify({
+        conversationId: 1,
+        body: "Hello from WebSocket",
+      }),
+      "private-conversation.1",
+    );
 
     return () => {
-      echo.leave("message-send");
+      echo.leave("private-conversation.1");
     };
   }, []);
 
-  return <div>Listening for broadcasts...</div>;
+  return <div>Sending WebSocket message...</div>;
 }
