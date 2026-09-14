@@ -1,28 +1,26 @@
+"use client";
+
+import { useConversation } from "@/context/ConversationContext";
 import Link from "next/link";
+import { useEffect } from "react";
 
-const users: Record<string, { name: string; status: string }> = {
-  "1": { name: "Alice Johnson", status: "online" },
-  "2": { name: "Bob Smith", status: "offline" },
-  "3": { name: "Charlie Brown", status: "online" },
-  "4": { name: "Diana Ross", status: "away" },
-  "5": { name: "Edward Davis", status: "offline" },
-  "6": { name: "Fiona Green", status: "online" },
-};
-
-const messages = [
-  { id: 1, sender: "them", text: "Hey! How's it going?", time: "10:30 AM" },
-  { id: 2, sender: "me", text: "I'm doing great, thanks! How about you?", time: "10:32 AM" },
-  { id: 3, sender: "them", text: "Pretty good! Just finishing up some work.", time: "10:33 AM" },
-  { id: 4, sender: "me", text: "Nice! Want to grab lunch later?", time: "10:35 AM" },
-  { id: 5, sender: "them", text: "Sure! That sounds great. Where do you want to go?", time: "10:36 AM" },
-  { id: 6, sender: "me", text: "How about that new Italian place downtown?", time: "10:38 AM" },
-  { id: 7, sender: "them", text: "Perfect! I've been wanting to try it. What time works for you?", time: "10:39 AM" },
-  { id: 8, sender: "me", text: "How about noon?", time: "10:40 AM" },
-  { id: 9, sender: "them", text: "See you there! 😊", time: "10:41 AM" },
-];
+const user = { name: "Unknown User", status: "offline" };
 
 export default function ChatPage({ params }: { params: { id: string } }) {
-  const user = users[params.id] || { name: "Unknown User", status: "offline" };
+  const {
+    conversationMessages,
+    isLoading,
+    errorMessage,
+    fetchConversationMessages,
+  } = useConversation();
+
+
+
+  
+  useEffect(() => {
+    fetchConversationMessages();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="flex flex-col">
@@ -32,8 +30,18 @@ export default function ChatPage({ params }: { params: { id: string } }) {
             href="/"
             className="p-2 hover:bg-indigo-500 rounded-full transition-colors mr-2"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
             </svg>
           </Link>
 
@@ -47,8 +55,8 @@ export default function ChatPage({ params }: { params: { id: string } }) {
                   user.status === "online"
                     ? "bg-green-400"
                     : user.status === "away"
-                    ? "bg-yellow-400"
-                    : "bg-gray-400"
+                      ? "bg-yellow-400"
+                      : "bg-gray-400"
                 }`}
               ></span>
             </div>
@@ -59,8 +67,18 @@ export default function ChatPage({ params }: { params: { id: string } }) {
           </div>
 
           <button className="p-2 hover:bg-indigo-500 rounded-full transition-colors">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+              />
             </svg>
           </button>
         </div>
@@ -98,8 +116,18 @@ export default function ChatPage({ params }: { params: { id: string } }) {
         <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
           <div className="flex items-center gap-2">
             <button className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
+                />
               </svg>
             </button>
 
@@ -110,14 +138,34 @@ export default function ChatPage({ params }: { params: { id: string } }) {
             />
 
             <button className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
             </button>
 
             <button className="p-2 bg-indigo-600 text-white hover:bg-indigo-700 rounded-full transition-colors">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                />
               </svg>
             </button>
           </div>
