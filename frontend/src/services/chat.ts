@@ -1,25 +1,17 @@
 import { ConversationType, MessageType } from "@/types/conversation";
+import { User } from "@/types/user";
 import { apiClient } from "./apiClient";
 
-export const startConversation = async (targetUserId: number) => {
-  try {
-    const response = await apiClient<ConversationType>(
-      `/api/conversation/${targetUserId}`,
-      {
-        method: "GET",
-      },
-    );
-
-    return response;
-  } catch (error) {
-    throw error;
-  }
+export type ConversationData = {
+  conversation: ConversationType;
+  messages: MessageType[];
+  users: User;
 };
 
-export const getConversationMessages = async (conversationId: number) => {
+export const getConversationByUserId = async (targetUserId: number) => {
   try {
-    const response = await apiClient<MessageType[]>(
-      `/api/conversation/${conversationId}/messages`,
+    const response = await apiClient<ConversationData>(
+      `/api/conversation/${targetUserId}/messages`,
       {
         method: "GET",
       },

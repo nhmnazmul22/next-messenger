@@ -1,14 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getUsers } from "@/services/users";
 import { User } from "@/types/user";
 import { handleError } from "@/utils/error";
 import { useRouter } from "next/navigation";
-import { startConversation } from "@/services/chat";
-import { useConversation } from "@/context/ConversationContext";
 
 export default function Home() {
   const [users, setUsers] = useState<User[]>([]);
@@ -16,26 +13,13 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const router = useRouter();
-  const { setConversation } = useConversation();
 
   const filteredUsers = users?.filter((user) =>
     user.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  const handleStartConversation = async (user: User) => {
-    try {
-      const response = await startConversation(user.id);
-
-      if (!response.success || !response.data) {
-        throw new Error(response.message ?? "Failed to load conversation");
-      }
-
-      console.log(response);
-      setConversation(response.data);
-      router.push(`/chat/${user.id}`);
-    } catch (error) {
-      setErrorMessage(handleError(error).message);
-    }
+  const handleStartConversation = (user: User) => {
+    router.push(`/chat/${user.id}`);
   };
 
   useEffect(() => {

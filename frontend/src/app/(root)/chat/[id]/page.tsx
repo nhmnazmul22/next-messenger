@@ -1,8 +1,8 @@
 "use client";
 
-import { use, useEffect } from "react";
+import { use } from "react";
 import Link from "next/link";
-import { useConversation } from "@/context/ConversationContext";
+import { useConversation } from "@/hooks/useConversation";
 
 export default function ChatPage({
   params,
@@ -10,17 +10,8 @@ export default function ChatPage({
   params: Promise<{ id: string }>;
 }) {
   const { id: targetUserId } = use(params);
-  const {
-    conversationMessages,
-    isLoading,
-    errorMessage,
-    fetchConversationMessages,
-  } = useConversation();
-
-  useEffect(() => {
-    fetchConversationMessages();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const { messages, targetUser, isLoading, errorMessage } =
+    useConversation(targetUserId);
 
   return (
     <div className="flex flex-col h-[calc(100vh-56px)]">
@@ -47,10 +38,13 @@ export default function ChatPage({
 
           <div className="flex items-center flex-1">
             <div className="w-10 h-10 rounded-full bg-indigo-400 flex items-center justify-center text-white font-semibold">
-              {targetUserId.charAt(0).toUpperCase()}
+              {targetUser?.name.charAt(0).toUpperCase() ??
+                targetUserId.charAt(0).toUpperCase()}
             </div>
             <div className="ml-3">
-              <h2 className="font-semibold">User {targetUserId}</h2>
+              <h2 className="font-semibold">
+                {targetUser?.name ?? `User ${targetUserId}`}
+              </h2>
               <p className="text-xs text-indigo-200">Chat</p>
             </div>
           </div>
@@ -85,14 +79,14 @@ export default function ChatPage({
             <div className="flex items-center justify-center h-full">
               <p className="text-red-600 dark:text-red-400">{errorMessage}</p>
             </div>
-          ) : conversationMessages.length === 0 ? (
+          ) : messages.length === 0 ? (
             <div className="flex items-center justify-center h-full">
               <p className="text-gray-500 dark:text-gray-400">
                 No messages yet
               </p>
             </div>
           ) : (
-            conversationMessages.map((msg) => (
+            messages.map((msg) => (
               <div
                 key={msg.id}
                 className={`flex ${
