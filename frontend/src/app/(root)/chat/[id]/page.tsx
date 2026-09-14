@@ -1,12 +1,15 @@
 "use client";
 
-import { useConversation } from "@/context/ConversationContext";
+import { use, useEffect } from "react";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useConversation } from "@/context/ConversationContext";
 
-const user = { name: "Unknown User", status: "offline" };
-
-export default function ChatPage({ params }: { params: { id: string } }) {
+export default function ChatPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id: targetUserId } = use(params);
   const {
     conversationMessages,
     isLoading,
@@ -14,16 +17,13 @@ export default function ChatPage({ params }: { params: { id: string } }) {
     fetchConversationMessages,
   } = useConversation();
 
-
-
-  
   useEffect(() => {
     fetchConversationMessages();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col h-[calc(100vh-56px)]">
       <div className="bg-indigo-600 text-white px-4 py-3">
         <div className="max-w-2xl mx-auto flex items-center">
           <Link
@@ -46,23 +46,12 @@ export default function ChatPage({ params }: { params: { id: string } }) {
           </Link>
 
           <div className="flex items-center flex-1">
-            <div className="relative">
-              <div className="w-10 h-10 rounded-full bg-indigo-400 flex items-center justify-center text-white font-semibold">
-                {user.name.charAt(0)}
-              </div>
-              <span
-                className={`absolute bottom-0 right-0 w-2.5 h-2.5 border-2 border-indigo-600 rounded-full ${
-                  user.status === "online"
-                    ? "bg-green-400"
-                    : user.status === "away"
-                      ? "bg-yellow-400"
-                      : "bg-gray-400"
-                }`}
-              ></span>
+            <div className="w-10 h-10 rounded-full bg-indigo-400 flex items-center justify-center text-white font-semibold">
+              {targetUserId.charAt(0).toUpperCase()}
             </div>
             <div className="ml-3">
-              <h2 className="font-semibold">{user.name}</h2>
-              <p className="text-xs text-indigo-200">{user.status}</p>
+              <h2 className="font-semibold">User {targetUserId}</h2>
+              <p className="text-xs text-indigo-200">Chat</p>
             </div>
           </div>
 
@@ -84,33 +73,58 @@ export default function ChatPage({ params }: { params: { id: string } }) {
         </div>
       </div>
 
-      <main className="flex-1 max-w-2xl w-full mx-auto bg-white dark:bg-gray-800 flex flex-col shadow-xl">
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {messages.map((msg) => (
-            <div
-              key={msg.id}
-              className={`flex ${msg.sender === "me" ? "justify-end" : "justify-start"}`}
-            >
-              <div
-                className={`max-w-[75%] ${
-                  msg.sender === "me"
-                    ? "bg-indigo-600 text-white rounded-l-2xl rounded-tr-2xl"
-                    : "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-r-2xl rounded-tl-2xl"
-                } px-4 py-2 shadow-sm`}
-              >
-                <p className="text-sm">{msg.text}</p>
-                <p
-                  className={`text-xs mt-1 ${
-                    msg.sender === "me"
-                      ? "text-indigo-200"
-                      : "text-gray-500 dark:text-gray-400"
-                  }`}
-                >
-                  {msg.time}
-                </p>
-              </div>
+      <main className="flex-1 max-w-2xl w-full mx-auto bg-white dark:bg-gray-800 flex flex-col shadow-xl min-h-0">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-[300px]">
+          {isLoading ? (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-gray-500 dark:text-gray-400">
+                Loading messages...
+              </p>
             </div>
-          ))}
+          ) : errorMessage ? (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-red-600 dark:text-red-400">{errorMessage}</p>
+            </div>
+          ) : conversationMessages.length === 0 ? (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-gray-500 dark:text-gray-400">
+                No messages yet
+              </p>
+            </div>
+          ) : (
+            conversationMessages.map((msg) => (
+              <div
+                key={msg.id}
+                className={`flex ${
+                  msg.user_id === Number(targetUserId)
+                    ? "justify-start"
+                    : "justify-end"
+                }`}
+              >
+                <div
+                  className={`max-w-[75%] ${
+                    msg.user_id === Number(targetUserId)
+                      ? "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-r-2xl rounded-tl-2xl"
+                      : "bg-indigo-600 text-white rounded-l-2xl rounded-tr-2xl"
+                  } px-4 py-2 shadow-sm`}
+                >
+                  <p className="text-sm">{msg.body}</p>
+                  <p
+                    className={`text-xs mt-1 ${
+                      msg.user_id === Number(targetUserId)
+                        ? "text-gray-500 dark:text-gray-400"
+                        : "text-indigo-200"
+                    }`}
+                  >
+                    {new Date(msg.created_at).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                </div>
+              </div>
+            ))
+          )}
         </div>
 
         <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
