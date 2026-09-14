@@ -30,13 +30,4 @@ class ConversationRepository
         return $this->conversation->create($attributes);
     }
 
-    public function conversationMessages(int $conversationId)
-    {
-        return $this->conversation
-            ->newQuery()
-            ->findOrFail($conversationId)
-            ->messages()
-            ->orderBy('created_at')
-            ->get();
-    }
 }

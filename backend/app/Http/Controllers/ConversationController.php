@@ -13,22 +13,6 @@ class ConversationController extends Controller
       private readonly ConversationService $conversationService
    ) {}
 
-   /**
-    * Send a message
-    */
-
-   public function getConversation(Request $request, int $targetUserId)
-   {
-
-      $conversation = $this->conversationService->createConversation($targetUserId);
-
-      return ApiResponse::success(
-         $conversation,
-         'Conversation created or fetch successful',
-         Response::HTTP_OK
-      );
-   }
-
    public function conversationMessages(Request $request, int $conversationId)
    {
 

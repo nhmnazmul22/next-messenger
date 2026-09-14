@@ -11,7 +11,7 @@ class ConversationService
    public function __construct(
       private readonly ConversationRepository $conversationRepository,
    ) {}
-   public function createConversation(int $targetUserId): Conversation
+   public function findOrCreateConversation(int $targetUserId): Conversation
    {
 
       $existingConversation = $this->conversationRepository->findConversation($targetUserId);
@@ -28,9 +28,16 @@ class ConversationService
       return $conversation;
    }
 
-   public function conversationMessages(int $conversationId)
+   public function conversationMessages(int $targetUserId)
    {
+      $conversation = $this->findOrCreateConversation($targetUserId);
 
-      return $this->conversationRepository->conversationMessages($conversationId);
+      return [
+         'conversation' => $conversation,
+         'messages' => $conversation->messages()
+            ->orderBy('created_at')
+            ->get(),
+         'users' => $conversation->users()->whereKey($targetUserId)
+      ];
    }
 }
