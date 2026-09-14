@@ -28,7 +28,6 @@ export default function Navbar() {
     }
   };
 
-  console.log("userInfo", userInfo);
   return (
     <nav className="bg-white dark:bg-gray-800 shadow-md px-6 py-3">
       <div className="max-w-6xl mx-auto flex items-center justify-between">
