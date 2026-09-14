@@ -4,35 +4,41 @@ use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-
+use Illuminate\Support\Arr;
 use Symfony\Component\HttpFoundation\Response;
 
 uses(RefreshDatabase::class);
 
-it('requires authentication to create a conversation', function () {
+it('requires authentication to fetch conversation messages', function () {
     $target = User::factory()->create();
 
-    $response = $this->getJson(route('get-conversation', ['targetUserId' => $target->id]));
+    $response = $this->getJson(
+        route('conversation-messages', ['targetUserId' => $target->id]),
+    );
 
     $response->assertStatus(Response::HTTP_UNAUTHORIZED);
 });
 
-it('creates a new private conversation with the target user', function () {
+it('creates a new private conversation with the target user and returns empty messages', function () {
     $user = User::factory()->create();
     $target = User::factory()->create();
 
     $this->actingAs($user);
 
-    $response = $this->getJson(route('get-conversation', ['targetUserId' => $target->id]));
+    $response = $this->getJson(
+        route('conversation-messages', ['targetUserId' => $target->id]),
+    );
 
     $response->assertStatus(Response::HTTP_OK);
     $response->assertJson([
         'success' => true,
-        'message' => 'Conversation created or fetch successful',
+        'message' => 'Messages retrieved successfully.',
     ]);
-    $response->assertJsonPath('data.type', 'private');
 
-    $conversationId = $response->json('data.id');
+    $conversationId = $response->json('data.conversation.id');
+
+    $response->assertJsonPath('data.conversation.type', 'private');
+    $response->assertJsonCount(0, 'data.messages');
 
     $this->assertNotNull($conversationId);
     $this->assertDatabaseHas('conversation_user', [
@@ -45,6 +51,21 @@ it('creates a new private conversation with the target user', function () {
     ]);
 });
 
+it('returns the target user in the response', function () {
+    $user = User::factory()->create();
+    $target = User::factory()->create();
+
+    $this->actingAs($user);
+
+    $response = $this->getJson(
+        route('conversation-messages', ['targetUserId' => $target->id]),
+    );
+
+    $response->assertStatus(Response::HTTP_OK);
+    $response->assertJsonPath('data.users.id', $target->id);
+    $response->assertJsonPath('data.users.name', $target->name);
+});
+
 it('returns the existing conversation instead of creating a duplicate', function () {
     $user = User::factory()->create();
     $target = User::factory()->create();
@@ -54,46 +75,15 @@ it('returns the existing conversation instead of creating a duplicate', function
 
     $this->actingAs($user);
 
-    $first = $this->getJson(route('get-conversation', ['targetUserId' => $target->id]));
+    $first = $this->getJson(route('conversation-messages', ['targetUserId' => $target->id]));
     $first->assertStatus(Response::HTTP_OK);
-    $first->assertJsonPath('data.id', $conversation->id);
+    $first->assertJsonPath('data.conversation.id', $conversation->id);
 
-    $second = $this->getJson(route('get-conversation', ['targetUserId' => $target->id]));
+    $second = $this->getJson(route('conversation-messages', ['targetUserId' => $target->id]));
     $second->assertStatus(Response::HTTP_OK);
-    $second->assertJsonPath('data.id', $conversation->id);
+    $second->assertJsonPath('data.conversation.id', $conversation->id);
 
     $this->assertDatabaseCount('conversations', 1);
-});
-
-it('requires authentication to fetch conversation messages', function () {
-    $conversation = Conversation::create(['type' => 'private']);
-
-    $response = $this->getJson(
-        route('conversation-messages', ['conversationId' => $conversation->id]),
-    );
-
-    $response->assertStatus(Response::HTTP_UNAUTHORIZED);
-});
-
-it('returns an empty message list for a conversation without messages', function () {
-    $user = User::factory()->create();
-    $target = User::factory()->create();
-
-    $conversation = Conversation::create(['type' => 'private']);
-    $conversation->users()->attach([$user->id, $target->id]);
-
-    $this->actingAs($user);
-
-    $response = $this->getJson(
-        route('conversation-messages', ['conversationId' => $conversation->id]),
-    );
-
-    $response->assertStatus(Response::HTTP_OK);
-    $response->assertJson([
-        'success' => true,
-        'message' => 'Messages retrieved successfully.',
-    ]);
-    $response->assertJsonCount(0, 'data');
 });
 
 it('returns the messages of a conversation in chronological order', function () {
@@ -122,13 +112,16 @@ it('returns the messages of a conversation in chronological order', function () 
     $this->actingAs($user);
 
     $response = $this->getJson(
-        route('conversation-messages', ['conversationId' => $conversation->id]),
+        route('conversation-messages', ['targetUserId' => $target->id]),
     );
 
     $response->assertStatus(Response::HTTP_OK);
-    $response->assertJsonCount(2, 'data');
-    $response->assertJsonPath('data.0.body', 'Older message');
-    $response->assertJsonPath('data.0.user_id', $target->id);
-    $response->assertJsonPath('data.1.body', 'Newer message');
-    $response->assertJsonPath('data.1.user_id', $user->id);
+    $response->assertJsonCount(2, 'data.messages');
+
+    $messages = $response->json('data.messages');
+    $bodies = Arr::pluck($messages, 'body');
+    $userIds = Arr::pluck($messages, 'user_id');
+
+    expect($bodies)->toBe(['Older message', 'Newer message']);
+    expect($userIds)->toBe([$target->id, $user->id]);
 });
