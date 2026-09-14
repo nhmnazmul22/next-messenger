@@ -6,12 +6,37 @@ import { useEffect, useState } from "react";
 import { getUsers } from "@/services/users";
 import { User } from "@/types/user";
 import { handleError } from "@/utils/error";
+import { useRouter } from "next/navigation";
+import { startConversation } from "@/services/chat";
+import { useConversation } from "@/context/ConversationContext";
 
 export default function Home() {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const router = useRouter();
+  const { setConversation } = useConversation();
+
+  const filteredUsers = users?.filter((user) =>
+    user.name.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
+
+  const handleStartConversation = async (user: User) => {
+    try {
+      const response = await startConversation(user.id);
+
+      if (!response.success || !response.data) {
+        throw new Error(response.message ?? "Failed to load conversation");
+      }
+
+      console.log(response);
+      setConversation(response.data);
+      router.push(`/chat/${user.id}`);
+    } catch (error) {
+      setErrorMessage(handleError(error).message);
+    }
+  };
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -23,7 +48,6 @@ export default function Home() {
           throw new Error(response.message ?? "Failed to load users");
         }
 
-        console.log(response.data);
         setUsers(response.data);
       } catch (error) {
         setErrorMessage(handleError(error).message);
@@ -34,10 +58,6 @@ export default function Home() {
 
     fetchUsers();
   }, []);
-
-  const filteredUsers = users?.filter((user) =>
-    user.name.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
 
   return (
     <main className="max-w-2xl mx-auto bg-white dark:bg-gray-800 min-h-[calc(100vh-52px)] shadow-xl">
@@ -118,8 +138,8 @@ export default function Home() {
               </div>
 
               <div className="ml-4">
-                <Link
-                  href={`/chat/${user.id}`}
+                <button
+                  onClick={() => handleStartConversation(user)}
                   className="flex items-center justify-center p-2 bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300 rounded-full hover:bg-indigo-200 dark:hover:bg-indigo-800 transition-colors"
                 >
                   <svg
@@ -135,7 +155,7 @@ export default function Home() {
                       d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
                     />
                   </svg>
-                </Link>
+                </button>
               </div>
             </div>
           ))

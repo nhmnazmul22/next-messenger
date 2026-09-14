@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import { AuthContextProvider } from "@/context/AuthContextProvider";
+import { ConversationContextProvider } from "@/context/ConversationContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,8 +32,10 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <AuthContextProvider>
-          {children}
-          <Toaster position="top-right" reverseOrder={false} />
+          <ConversationContextProvider>
+            {children}
+            <Toaster position="top-right" reverseOrder={false} />
+          </ConversationContextProvider>
         </AuthContextProvider>
       </body>
     </html>
