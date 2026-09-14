@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Services\ConversationService;
+use App\Support\ApiResponse;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class ConversationController extends Controller
 {
@@ -21,6 +23,12 @@ class ConversationController extends Controller
          'userId' => ['required', 'int', 'exists:users,id']
       ]);
 
-      return $this->conversationService->createConversation($validated);
+      $conversation = $this->conversationService->createConversation($validated);
+
+      return ApiResponse::success(
+         $conversation,
+         'Conversation created or fetch successful',
+         Response::HTTP_OK
+      );
    }
 }

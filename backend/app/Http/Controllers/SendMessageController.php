@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\SendMessageRequest;
 use App\Services\MessageService;
+use App\Support\ApiResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 class SendMessageController extends Controller
 {
@@ -18,6 +20,12 @@ class SendMessageController extends Controller
     public function sendMessage(SendMessageRequest $sendMessageRequest)
     {
 
-        return $this->messageService->sendMessage($sendMessageRequest->validated());
+        $message = $this->messageService->sendMessage($sendMessageRequest->validated());
+
+        return ApiResponse::success(
+            $message,
+            'Message send successful',
+            Response::HTTP_CREATED
+        );
     }
 }
