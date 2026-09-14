@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ConversationController;
 use App\Http\Controllers\SendMessageController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
@@ -16,4 +17,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('/users', UserController::class)->only(['index', 'show']);
 
     Route::post('/send-message', [SendMessageController::class, 'sendMessage'])->name('send.message');
+
+    Route::post("/conversations", [ConversationController::class, 'createConversation']);
 });
