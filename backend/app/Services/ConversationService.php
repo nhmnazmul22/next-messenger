@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\Conversation;
-use App\Models\Message;
 use App\Repository\ConversationRepository;
 
 class ConversationService
@@ -12,10 +11,10 @@ class ConversationService
    public function __construct(
       private readonly ConversationRepository $conversationRepository,
    ) {}
-   public function createConversation(array $attributes): Conversation
+   public function createConversation(int $targetUserId): Conversation
    {
 
-      $existingConversation = $this->conversationRepository->findConversation($attributes['userId']);
+      $existingConversation = $this->conversationRepository->findConversation($targetUserId);
       if (isset($existingConversation)) {
          return $existingConversation;
       }
@@ -24,7 +23,7 @@ class ConversationService
          'type' => 'private'
       ]);
 
-      $conversation->users()->attach([auth()->id(), $attributes['userId']]);
+      $conversation->users()->attach([auth()->id(), $targetUserId]);
 
       return $conversation;
    }

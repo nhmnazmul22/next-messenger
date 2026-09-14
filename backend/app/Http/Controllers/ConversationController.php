@@ -17,13 +17,10 @@ class ConversationController extends Controller
     * Send a message
     */
 
-   public function createConversation(Request $request)
+   public function getConversation(Request $request, int $targetUserId)
    {
-      $validated = $request->validate([
-         'userId' => ['required', 'int', 'exists:users,id']
-      ]);
 
-      $conversation = $this->conversationService->createConversation($validated);
+      $conversation = $this->conversationService->createConversation($targetUserId);
 
       return ApiResponse::success(
          $conversation,

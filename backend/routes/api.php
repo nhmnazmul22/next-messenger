@@ -16,7 +16,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me'])->name('me');
     Route::apiResource('/users', UserController::class)->only(['index', 'show']);
 
-    Route::post('/send-message', [SendMessageController::class, 'sendMessage'])->name('send.message');
+    Route::post('/send-message', [SendMessageController::class, 'sendMessage'])
+        ->name('send.message');
 
-    Route::post("/conversations", [ConversationController::class, 'createConversation']);
+    Route::get("/conversation/{targetUserId}", [ConversationController::class, 'getConversation'])
+        ->name('get-conversation');
+
+    Route::get('/conversations/{conversationId}/messages', [ConversationController::class, 'conversationMessages'])
+        ->name('conversation-messages');
 });
