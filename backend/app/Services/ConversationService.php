@@ -27,4 +27,10 @@ class ConversationService
 
       return $conversation;
    }
+
+   public function conversationMessages(int $conversationId)
+   {
+
+      return $this->conversationRepository->conversationMessages($conversationId);
+   }
 }

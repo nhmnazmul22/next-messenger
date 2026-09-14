@@ -28,4 +28,16 @@ class ConversationController extends Controller
          Response::HTTP_OK
       );
    }
+
+   public function conversationMessages(Request $request, int $conversationId)
+   {
+
+      $messages = $this->conversationService->conversationMessages($conversationId);
+
+      return ApiResponse::success(
+         $messages,
+         'Messages retrieved successfully.',
+         Response::HTTP_OK
+      );
+   }
 }

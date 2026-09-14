@@ -13,7 +13,7 @@ class ConversationRepository
 
 
 
-    public function findConversation(int $targetUserId): Conversation
+    public function findConversation(int $targetUserId): ?Conversation
     {
         return $this->conversation
             ->whereHas('users', function ($query) {
@@ -28,5 +28,15 @@ class ConversationRepository
     public function createConversation(array $attributes)
     {
         return $this->conversation->create($attributes);
+    }
+
+    public function conversationMessages(int $conversationId)
+    {
+        return $this->conversation
+            ->newQuery()
+            ->findOrFail($conversationId)
+            ->messages()
+            ->orderBy('created_at')
+            ->get();
     }
 }
