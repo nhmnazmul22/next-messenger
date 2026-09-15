@@ -2,6 +2,7 @@ import { ApiError } from "@/helpers/ErrorHelper";
 import { parseJson } from "@/helpers/http";
 
 export type ApiResponseType<T extends object> = {
+  success: any;
   success: boolean;
   message: string;
   errors?: Record<string, string[]>;

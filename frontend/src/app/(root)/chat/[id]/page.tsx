@@ -1,6 +1,6 @@
 "use client";
 
-import { use } from "react";
+import { use, useEffect } from "react";
 import Link from "next/link";
 import { useConversation } from "@/hooks/useConversation";
 import Image from "next/image";
@@ -11,8 +11,30 @@ export default function ChatPage({
   params: Promise<{ id: string }>;
 }) {
   const { id: targetUserId } = use(params);
-  const { messages, targetUser, isLoading, errorMessage } =
-    useConversation(targetUserId);
+  const {
+    messages,
+    message,
+    targetUser,
+    isLoading,
+    errorMessage,
+    setMessage,
+    handleSendMessage,
+  } = useConversation(targetUserId);
+
+  useEffect(() => {
+    const listener = (e: KeyboardEvent) => {
+      if (e.code === "Enter") {
+        handleSendMessage();
+      }
+    };
+
+    document.addEventListener("keydown", listener);
+
+    return () => {
+      document.removeEventListener("keydown", listener);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="flex flex-col h-[calc(100vh-56px)]">
@@ -155,6 +177,8 @@ export default function ChatPage({
             <input
               type="text"
               placeholder="Type a message..."
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
               className="flex-1 px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             />
 
@@ -174,7 +198,10 @@ export default function ChatPage({
               </svg>
             </button>
 
-            <button className="p-2 bg-indigo-600 text-white hover:bg-indigo-700 rounded-full transition-colors">
+            <button
+              onClick={handleSendMessage}
+              className="p-2 cursor-pointer bg-indigo-600 text-white hover:bg-indigo-700 rounded-full transition-colors"
+            >
               <svg
                 className="w-6 h-6"
                 fill="none"

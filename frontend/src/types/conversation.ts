@@ -13,3 +13,10 @@ export type MessageType = {
   created_at: string;
   updated_at: string;
 };
+
+export type MessageSendType = {
+  senderId: number;
+  conversationId: number;
+  receiverId: number;
+  body: string;
+};
