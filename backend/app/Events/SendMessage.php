@@ -45,10 +45,11 @@ class SendMessage implements ShouldBroadcastNow
     {
         return [
             'id' => $this->message->id,
-            'conversationId' => $this->message->conversation_id,
-            'userId' => $this->message->user_id,
+            'conversation_id' => $this->message->conversation_id,
+            'user_id' => $this->message->user_id,
             'body' => $this->message->body,
-            'createdAt' => $this->message->created_at?->toISOString(),
+            'created_at' => $this->message->created_at?->toISOString(),
+            'updated_at' => $this->message->updated_at?->toISOString(),
         ];
     }
 }

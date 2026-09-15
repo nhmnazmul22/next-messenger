@@ -1,3 +1,4 @@
+import { getCookie } from "@/services/apiClient";
 import Echo from "laravel-echo";
 import Pusher from "pusher-js";
 
@@ -8,6 +9,7 @@ declare global {
 }
 
 let echo: Echo<"reverb"> | null = null;
+const apiEndPoint = `${process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:8000"}`;
 
 export function getEcho() {
   if (typeof window === "undefined") {
@@ -25,6 +27,45 @@ export function getEcho() {
       wssPort: Number(process.env.NEXT_PUBLIC_REVERB_PORT),
       forceTLS: false,
       enabledTransports: ["ws", "wss"],
+      authEndpoint: `${apiEndPoint}/api/broadcasting/auth`,
+
+      authorizer: (channel) => {
+        return {
+          authorize: async (socketId, callback) => {
+            try {
+              const response = await fetch(
+                `${apiEndPoint}/api/broadcasting/auth`,
+                {
+                  method: "POST",
+                  credentials: "include",
+                  headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                    "X-XSRF-TOKEN": getCookie("XSRF-TOKEN") ?? "",
+                  },
+                  body: JSON.stringify({
+                    socket_id: socketId,
+                    channel_name: channel.name,
+                  }),
+                },
+              );
+
+              if (!response.ok) {
+                throw new Error(`Broadcast auth failed: ${response.status}`);
+              }
+
+              const data = await response.json();
+
+              callback(null, data);
+            } catch (error) {
+              callback(
+                error instanceof Error ? error : new Error(String(error)),
+                null,
+              );
+            }
+          },
+        };
+      },
     });
   }
 
@@ -32,3 +73,5 @@ export function getEcho() {
 }
 
 export default echo;
+
+

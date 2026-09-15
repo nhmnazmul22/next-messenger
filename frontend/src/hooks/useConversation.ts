@@ -6,6 +6,7 @@ import { ConversationType, MessageType } from "@/types/conversation";
 import { User } from "@/types/user";
 import { handleError } from "@/utils/error";
 import { useAuth } from "@/context/AuthContextProvider";
+import { getEcho } from "@/lib/echo";
 
 type UseConversationReturn = {
   conversation: ConversationType | null;
@@ -49,7 +50,7 @@ export const useConversation = (
         throw new Error(response.message ?? "Failed to load users");
       }
 
-      setMessages((prev) => [...prev, response.data as MessageType]);
+      setMessage("");
     } catch (error) {
       setErrorMessage(handleError(error).message);
     }
@@ -93,6 +94,37 @@ export const useConversation = (
       cancelled = true;
     };
   }, [targetUserId]);
+
+  useEffect(() => {
+    if (!conversation?.id) {
+      return;
+    }
+
+    const Echo = getEcho();
+
+    if (!Echo) {
+      return;
+    }
+
+    const channelName = `conversation.${conversation.id}`;
+
+    const channel = Echo.private(channelName);
+
+    channel.listen(".message.sent", (message: MessageType) => {
+      console.log(message);
+      setMessages((prev) => {
+        if (prev.some((item) => item.id === message.id)) {
+          return prev;
+        }
+
+        return [...prev, message];
+      });
+    });
+
+    return () => {
+      Echo.leave(channelName);
+    };
+  }, [conversation?.id]);
 
   return {
     conversation,
