@@ -3,6 +3,7 @@
 import { use } from "react";
 import Link from "next/link";
 import { useConversation } from "@/hooks/useConversation";
+import Image from "next/image";
 
 export default function ChatPage({
   params,
@@ -37,9 +38,21 @@ export default function ChatPage({
           </Link>
 
           <div className="flex items-center flex-1">
-            <div className="w-10 h-10 rounded-full bg-indigo-400 flex items-center justify-center text-white font-semibold">
-              {targetUser?.name.charAt(0).toUpperCase() ??
-                targetUserId.charAt(0).toUpperCase()}
+            <div className="relative">
+              {targetUser && targetUser.avatarUrl ? (
+                <Image
+                  src={targetUser.avatarUrl}
+                  alt={targetUser.name}
+                  width={48}
+                  height={48}
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-12 h-12 rounded-full bg-indigo-500 flex items-center justify-center text-white font-semibold text-lg">
+                  {targetUser && targetUser.name.charAt(0)}
+                </div>
+              )}
+              <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-white dark:border-gray-800 rounded-full"></span>
             </div>
             <div className="ml-3">
               <h2 className="font-semibold">
@@ -68,7 +81,7 @@ export default function ChatPage({
       </div>
 
       <main className="flex-1 max-w-2xl w-full mx-auto bg-white dark:bg-gray-800 flex flex-col shadow-xl min-h-0">
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-[300px]">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-75">
           {isLoading ? (
             <div className="flex items-center justify-center h-full">
               <p className="text-gray-500 dark:text-gray-400">
